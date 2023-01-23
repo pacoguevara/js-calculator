@@ -1,4 +1,6 @@
 let buffer = '0';
+let runningTotal = 0;
+let previousSymbol = null;
 
 function buttonClick (value) {
   if (isNaN(parseInt(value))) {
@@ -21,13 +23,45 @@ function rerender () {
   document.querySelector('.output').innerText = buffer;
 }
 
+function handleMath (value) {
+  if (buffer === '0') {
+    return;
+  }
+  let intBuffer = parseInt(buffer);
+  if (runningTotal === 0) {
+    runningTotal = intBuffer;
+  } else {
+    flushMathOperation(intBuffer);
+  }
+  previousSymbol = value;
+  buffer = '0';
+  console.log(runningTotal);
+}
+
+function flushMathOperation (value) {
+  if (previousSymbol === '+') {
+    runningTotal += value;
+  } else if (previousSymbol === '-') {
+    runningTotal -= value;
+  } else if (previousSymbol === 'x') {
+    runningTotal *= value;
+  } else if (previousSymbol === '/') {
+    runningTotal /= value;
+  }
+}
 function handleSymbol (symbol) {
   switch (symbol) {
     case 'C':
       buffer = '0';
       break;
     case '=':
-      console.log('equals');
+      if (previousSymbol === null) {
+        return;
+      }
+      flushMathOperation(parseInt(buffer));
+      previousSymbol = null;
+      buffer = runningTotal;
+      runningTotal = 0;
       break;
     case '<':
       if (buffer.length === 1) {
@@ -37,16 +71,10 @@ function handleSymbol (symbol) {
       }
       break;
     case '/':
-      console.log('divide');
-      break;
     case '+':
-      console.log('plus');
-      break;
     case '-':
-      console.log('minus');
-      break;
     case 'x':
-      console.log('multiply');
+      handleMath(symbol);
       break;
     default:
       console.log('undefined');
